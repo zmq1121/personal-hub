@@ -881,6 +881,8 @@ document.getElementById('confirmOv').addEventListener('click', function(e) {
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function td(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmt(d){if(!d)return''; var x=new Date(d); return (x.getMonth()+1)+'/'+(x.getDate());}
+function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtMonth(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function dl(d){var x=new Date(d); x.setHours(0,0,0,0); var n=new Date(); n.setHours(0,0,0,0); return Math.ceil((x-n)/86400000);}
 function gv(id){var el=document.getElementById(id); return el?el.value:'';}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1071,7 +1073,7 @@ function rDash() {
   var undone = S.todos.filter(function(x){return !x.done;});
   var todayDue = undone.filter(function(x){return x.due===t;}).length;
   var pomT = S.pomo.sessions.filter(function(s){return s.date===t;}).length;
-  var mo = new Date().toISOString().slice(0,7);
+  var mo = fmtMonth(new Date());
   var mb = S.bills.filter(function(b){return b.date.startsWith(mo);});
   var mTotal = mb.reduce(function(s,b){return s+b.amt;},0);
   var upcoming = S.cds.filter(function(c){return dl(c.date)>=0;}).sort(function(a,b){return dl(a.date)-dl(b.date);})[0];
@@ -1203,7 +1205,7 @@ function delHabit(id){
 }
 function hStreak(h){
   var s=0, d=new Date();
-  while(true){var ds=d.toISOString().split('T')[0]; if(!h.checks[ds])break; s++; d.setDate(d.getDate()-1);}
+  while(true){var ds=fmtDate(d); if(!h.checks[ds])break; s++; d.setDate(d.getDate()-1);}
   return s;
 }
 function rHabit(){
@@ -1212,7 +1214,7 @@ function rHabit(){
   el.innerHTML=S.habits.map(function(h){
     var str=hStreak(h), tot=Object.values(h.checks).filter(Boolean).length, pct=Math.min(100,Math.round(tot/h.target*100));
     var days=[];
-    for(var i=6;i>=0;i--){var d=new Date(); d.setDate(d.getDate()-i); var ds=d.toISOString().split('T')[0]; days.push({ds:ds,ck:!!h.checks[ds],tod:ds===td()});}
+    for(var i=6;i>=0;i--){var d=new Date(); d.setDate(d.getDate()-i); var ds=fmtDate(d); days.push({ds:ds,ck:!!h.checks[ds],tod:ds===td()});}
     return '<div class="card" style="margin-bottom:10px">'+
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
         '<div style="font-size:14px;font-weight:600;flex:1">'+esc(h.name)+'</div>'+
@@ -1256,7 +1258,7 @@ function uPom(){
   var tots=S.pomo.sessions.length;
   var ds=[...new Set(S.pomo.sessions.map(function(s){return s.date;}))];
   var str=0; var dd=new Date();
-  while(true){var dss=dd.toISOString().split('T')[0]; if(!ds.includes(dss))break; str++; dd.setDate(dd.getDate()-1);}
+  while(true){var dss=fmtDate(dd); if(!ds.includes(dss))break; str++; dd.setDate(dd.getDate()-1);}
   var avg=ds.length?Math.round(tots*25/ds.length):0;
   document.getElementById('pomStats').innerHTML=
     '<div class="stat"><div class="stat-label">今日完成</div><div class="stat-num">'+ts+'</div><div class="stat-sub">'+(ts*25)+' 分钟</div></div>'+
@@ -1364,7 +1366,7 @@ function delBill(id){
   });
 }
 function rBills(){
-  var mo=new Date().toISOString().slice(0,7);
+  var mo=fmtMonth(new Date());
   var mb=S.bills.filter(function(b){return b.date.startsWith(mo);});
   var tot=mb.reduce(function(s,b){return s+b.amt;},0);
   var avg=mb.length?tot/new Date().getDate():0;
@@ -1497,7 +1499,7 @@ function doCheckin(){
   var t=td(); if(S.ci.dates[t])return;
   S.ci.dates[t]={mood:selMood,note:gv('ciNote')};
   var s=0, d=new Date();
-  while(true){var ds=d.toISOString().split('T')[0]; if(!S.ci.dates[ds])break; s++; d.setDate(d.getDate()-1);}
+  while(true){var ds=fmtDate(d); if(!S.ci.dates[ds])break; s++; d.setDate(d.getDate()-1);}
   S.ci.streak=s; persist('ci'); rCi();
 }
 function selM(m){selMood=m; rCi();}
