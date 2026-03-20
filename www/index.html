@@ -453,10 +453,37 @@ var S = {
 };
 function persist(k){sv(K[k],S[k]);}
 
+function updateSyncStatus(status, text) {
+  var dot = document.getElementById('syncDot');
+  var txt = document.getElementById('syncText');
+  var statusEl = document.getElementById('syncStatus');
+  
+  if (statusEl) statusEl.style.display = 'flex';
+  if (dot) {
+    dot.className = 'sync-dot';
+    if (status === 'offline') dot.classList.add('offline');
+    if (status === 'error') dot.classList.add('error');
+  }
+  if (txt) txt.textContent = text;
+}
+
 var supabaseClient = null;
 var currentUser = null;
 
 function initSupabase() {
+  var loginBtn = document.getElementById('loginBtn');
+  
+  if (typeof supabase === 'undefined') {
+    console.warn('Supabase library not loaded, cloud sync disabled');
+    updateSyncStatus('offline', '离线模式');
+    if (loginBtn) {
+      loginBtn.innerHTML = '登录同步数据';
+      loginBtn.style.padding = '8px 14px';
+      loginBtn.onclick = signInWithGitHub;
+    }
+    return;
+  }
+  
   var supabaseUrl = 'https://nowcffymimjpgldgyabr.supabase.co';
   var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd2NmZnltaW1qcGdsZGd5YWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDk0MjIsImV4cCI6MjA4OTU4NTQyMn0.qhSqZJlUNuhdMTQS1ruo8E76A2qHaH4E2RiqyLyrkQg';
   supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
@@ -500,6 +527,11 @@ async function handleAuthChange(event, session) {
 }
 
 window.signInWithGitHub = async function() {
+  if (!supabaseClient) {
+    alert('请先调整浏览器设置以加载同步功能\n\n1. 打开 Edge 设置 → 隐私、搜索和服务\n2. 找到"追踪防护"，将级别改为"基本"\n3. 刷新页面');
+    return;
+  }
+  
   try {
     updateSyncStatus('syncing', '登录中...');
     await supabaseClient.auth.signInWithOAuth({
@@ -514,6 +546,7 @@ window.signInWithGitHub = async function() {
 };
 
 window.signOutUser = async function() {
+  if (!supabaseClient) return;
   try {
     await supabaseClient.auth.signOut();
   } catch (error) {
@@ -527,20 +560,6 @@ window.manualSync = async function() {
   await saveToCloud();
   updateSyncStatus('online', '已同步');
 };
-
-function updateSyncStatus(status, text) {
-  var dot = document.getElementById('syncDot');
-  var txt = document.getElementById('syncText');
-  var statusEl = document.getElementById('syncStatus');
-  
-  if (statusEl) statusEl.style.display = 'flex';
-  if (dot) {
-    dot.className = 'sync-dot';
-    if (status === 'offline') dot.classList.add('offline');
-    if (status === 'error') dot.classList.add('error');
-  }
-  if (txt) txt.textContent = text;
-}
 
 async function saveToCloud() {
   if (!currentUser || !supabaseClient) return;
