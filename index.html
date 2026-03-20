@@ -678,6 +678,10 @@ document.querySelectorAll('.nav-item,.bnav').forEach(function(n){
 function showMo(t, d) {
   document.getElementById('moC').innerHTML = buildMo(t, d);
   document.getElementById('moOv').classList.add('open');
+  if(t === 'addSched') {
+    var selectedDate = d && d.date ? d.date : td();
+    setTimeout(function() { updateSchedDays(selectedDate); }, 10);
+  }
 }
 function closeMo(){document.getElementById('moOv').classList.remove('open');}
 document.getElementById('moOv').addEventListener('click',function(e){if(e.target===e.currentTarget)closeMo();});
@@ -877,13 +881,13 @@ function ncL(c){return {study:'学习笔记',interview:'面试题',work:'工作'
 function pc(p){if(p>=100)return'var(--sage)'; if(p>=60)return'var(--blue)'; if(p>=30)return'var(--amber)'; return'var(--red)';}
 function schedBarColor(c){return {red:'var(--red)',blue:'var(--blue)',sage:'var(--sage)',amber:'var(--amber)'}[c]||'var(--slate)';}
 
-var weekStart = getWeekStart(new Date());
-
 function getWeekStart(d) {
   var day = d.getDay();
   var diff = d.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(d.setDate(diff));
 }
+
+var weekStart = getWeekStart(new Date());
 
 function weekNav(delta) {
   weekStart.setDate(weekStart.getDate() + delta * 7);
@@ -939,7 +943,7 @@ function openSchedForDay(ds) {
   showMo('addSched', {date: ds});
 }
 
-function updateSchedDays() {
+function updateSchedDays(selectedDate) {
   var month = document.getElementById('msMonth').value;
   var daySelect = document.getElementById('msDay');
   if(!month) return;
@@ -947,9 +951,6 @@ function updateSchedDays() {
   var year = parseInt(month.split('-')[0]);
   var mon = parseInt(month.split('-')[1]);
   var daysInMonth = new Date(year, mon, 0).getDate();
-  var todayDate = new Date().getDate();
-  var todayMonth = new Date().getMonth() + 1;
-  var todayYear = new Date().getFullYear();
   
   daySelect.innerHTML = '';
   for(var i=1;i<=daysInMonth;i++) {
@@ -957,7 +958,7 @@ function updateSchedDays() {
     var dayStr = String(i).padStart(2, '0');
     opt.value = month + '-' + dayStr;
     opt.textContent = i + '日';
-    if(year === todayYear && mon === todayMonth && i === todayDate) opt.selected = true;
+    if(selectedDate && opt.value === selectedDate) opt.selected = true;
     daySelect.appendChild(opt);
   }
 }
