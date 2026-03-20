@@ -439,7 +439,6 @@ body.dark .qbtn{background:var(--paper2);}
 </div>
 
 <script>
-/* ══ DATA ══ */
 var K = {todos:'h_td',cds:'h_cd',habits:'h_hb',pomo:'h_pm',study:'h_st',ints:'h_in',bills:'h_bl',goals:'h_gl',notes:'h_nt',ci:'h_ci',sched:'h_sc',theme:'h_th'};
 function ld(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function sv(k,v){localStorage.setItem(k,JSON.stringify(v));}
@@ -458,7 +457,6 @@ var S = {
 };
 function persist(k){sv(K[k],S[k]);}
 
-/* ══ NAV ══ */
 var pNames = {dashboard:'仪表盘',todo:'待办事项',countdown:'倒计时',habit:'习惯打卡',pomodoro:'番茄钟',study:'学习进度',interview:'面试追踪',bills:'账单记录',goals:'目标追踪',notes:'笔记',checkin:'签到',settings:'设置'};
 var pActs = {todo:{l:'新增待办',m:'addTodo'},countdown:{l:'添加倒计时',m:'addCountdown'},habit:{l:'新建习惯',m:'addHabit'},study:{l:'添加学习',m:'addStudy'},interview:{l:'添加记录',m:'addInterview'},bills:{l:'记一笔',m:'addBill'},goals:{l:'创建目标',m:'addGoal'},notes:{l:'新建笔记',m:'addNote'}};
 var cur = 'dashboard';
@@ -479,7 +477,6 @@ document.querySelectorAll('.nav-item,.bnav').forEach(function(n){
   n.addEventListener('click', function(){go(n.dataset.p);});
 });
 
-/* ══ MODAL ══ */
 function showMo(t, d) {
   document.getElementById('moC').innerHTML = buildMo(t, d);
   document.getElementById('moOv').classList.add('open');
@@ -640,7 +637,6 @@ window.importFrom = function(type) {
   }
 };
 
-/* ══ CONFIRM ══ */
 var pendingDelete = null;
 
 function showConfirm(title, msg, callback) {
@@ -685,7 +681,6 @@ function ncL(c){return {study:'学习笔记',interview:'面试题',work:'工作'
 function pc(p){if(p>=100)return'var(--sage)'; if(p>=60)return'var(--blue)'; if(p>=30)return'var(--amber)'; return'var(--red)';}
 function schedBarColor(c){return {red:'var(--red)',blue:'var(--blue)',sage:'var(--sage)',amber:'var(--amber)'}[c]||'var(--slate)';}
 
-/* ══ WEEK CALENDAR ══ */
 var weekStart = getWeekStart(new Date());
 
 function getWeekStart(d) {
@@ -814,7 +809,6 @@ function showToast(msg) {
   setTimeout(function(){toast.remove();}, 3000);
 }
 
-/* ══ DASHBOARD ══ */
 function rDash() {
   var t = td();
   var undone = S.todos.filter(function(x){return !x.done;});
@@ -937,7 +931,6 @@ function rCd(){
   }).join('');
 }
 
-/* ══ HABIT ══ */
 function saveHabit(){
   var n=gv('mn').trim(); if(!n)return;
   S.habits.push({id:uid(),name:n,target:parseInt(gv('mtg'))||21,checks:{}});
@@ -984,7 +977,6 @@ function rHabit(){
   }).join('');
 }
 
-/* ══ POMODORO ══ */
 var PS={running:false,mode:'focus',el:0,iv:null};
 var PF=25*60, PB=5*60;
 function ptick(){
@@ -1018,7 +1010,6 @@ function uPom(){
     '<div class="stat"><div class="stat-label">日均时长</div><div class="stat-num">'+avg+'</div><div class="stat-sub">分钟</div></div>';
 }
 
-/* ══ STUDY ══ */
 function saveStudy(){
   var n=gv('mn').trim(); if(!n)return;
   S.study.push({id:uid(),name:n,cur:parseInt(gv('mcur'))||0,target:parseInt(gv('mtg'))||100});
@@ -1107,7 +1098,6 @@ document.getElementById('intFt').addEventListener('click',function(e){
   rInt();
 });
 
-/* ══ BILLS ══ */
 function saveBill(){
   var amt=parseFloat(gv('mamt')); if(!amt||amt<=0)return;
   S.bills.unshift({id:uid(),amt:amt,cat:gv('mc'),date:gv('md'),note:gv('mn')});
@@ -1202,7 +1192,6 @@ function rGoals(){
   }).join('');
 }
 
-/* ══ NOTES ══ */
 var nFlt='all';
 function saveNote(eid){
   var title=gv('mtt').trim(); if(!title)return;
@@ -1249,7 +1238,6 @@ document.getElementById('noteFt').addEventListener('click',function(e){
   rNotes();
 });
 
-/* ══ CHECKIN ══ */
 var moods=['😊','😄','😐','😔','😤'];
 var selMood='😊';
 function doCheckin(){
@@ -1326,7 +1314,6 @@ function confirmClear(){
   });
 }
 
-/* ══ INIT ══ */
 (function(){
   var th=ld(K.theme);
   if(th==='dark'){document.body.classList.add('dark'); document.getElementById('thTgl').checked=true;}
