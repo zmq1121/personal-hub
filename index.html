@@ -879,7 +879,7 @@ document.getElementById('confirmOv').addEventListener('click', function(e) {
 });
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
-function td(){return new Date().toISOString().split('T')[0];}
+function td(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmt(d){if(!d)return''; var x=new Date(d); return (x.getMonth()+1)+'/'+(x.getDate());}
 function dl(d){var x=new Date(d); x.setHours(0,0,0,0); var n=new Date(); n.setHours(0,0,0,0); return Math.ceil((x-n)/86400000);}
 function gv(id){var el=document.getElementById(id); return el?el.value:'';}
