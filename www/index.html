@@ -433,113 +433,38 @@ body.dark .qbtn{background:var(--paper2);}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
-var supabaseUrl = 'https://nowcffymimjpgldgyabr.supabase.co';
-var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd2NmZnltaW1qcGdsZGd5YWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDk0MjIsImV4cCI6MjA4OTU4NTQyMn0.qhSqZJlUNuhdMTQS1ruo8E76A2qHaH4E2RiqyLyrkQg';
-var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+var K = {todos:'h_td',cds:'h_cd',habits:'h_hb',pomo:'h_pm',study:'h_st',ints:'h_in',bills:'h_bl',goals:'h_gl',notes:'h_nt',ci:'h_ci',sched:'h_sc',theme:'h_th'};
+function ld(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
+function sv(k,v){localStorage.setItem(k,JSON.stringify(v));}
+var S = {
+  todos: ld(K.todos)||[],
+  cds:   ld(K.cds)||[],
+  habits:ld(K.habits)||[],
+  pomo:  ld(K.pomo)||{sessions:[]},
+  study: ld(K.study)||[],
+  ints:  ld(K.ints)||[],
+  bills: ld(K.bills)||[],
+  goals: ld(K.goals)||[],
+  notes: ld(K.notes)||[],
+  ci:    ld(K.ci)||{dates:{},streak:0},
+  sched: ld(K.sched)||{}
+};
+function persist(k){sv(K[k],S[k]);}
+
+var supabaseClient = null;
 var currentUser = null;
 
-window.signInWithGitHub = async function() {
-  try {
-    updateSyncStatus('syncing', '登录中...');
-    var result = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo: window.location.href }
-    });
-  } catch (error) {
-    console.error('登录失败:', error);
-    updateSyncStatus('error', '登录失败');
-    alert('登录失败: ' + error.message);
-  }
-};
-
-window.signOutUser = async function() {
-  try {
-    await supabase.auth.signOut();
-  } catch (error) {
-    console.error('退出失败:', error);
-  }
-};
-
-window.manualSync = async function() {
-  if (!currentUser) return;
-  updateSyncStatus('syncing', '同步中...');
-  await saveToCloud();
-  updateSyncStatus('online', '已同步');
-};
-
-function updateSyncStatus(status, text) {
-  var dot = document.getElementById('syncDot');
-  var txt = document.getElementById('syncText');
-  var statusEl = document.getElementById('syncStatus');
+function initSupabase() {
+  var supabaseUrl = 'https://nowcffymimjpgldgyabr.supabase.co';
+  var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd2NmZnltaW1qcGdsZGd5YWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDk0MjIsImV4cCI6MjA4OTU4NTQyMn0.qhSqZJlUNuhdMTQS1ruo8E76A2qHaH4E2RiqyLyrkQg';
+  supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
   
-  if (statusEl) statusEl.style.display = 'flex';
-  if (dot) {
-    dot.className = 'sync-dot';
-    if (status === 'offline') dot.classList.add('offline');
-    if (status === 'error') dot.classList.add('error');
-  }
-  if (txt) txt.textContent = text;
+  supabaseClient.auth.onAuthStateChange(handleAuthChange);
 }
 
-async function saveToCloud() {
-  if (!currentUser) return;
-  try {
-    var dataToSave = {
-      todos: S.todos,
-      cds: S.cds,
-      habits: S.habits,
-      pomo: S.pomo,
-      study: S.study,
-      ints: S.ints,
-      bills: S.bills,
-      goals: S.goals,
-      notes: S.notes,
-      ci: S.ci,
-      sched: S.sched,
-      theme: ld(K.theme),
-      updatedAt: new Date().toISOString()
-    };
-    var result = await supabase.from('user_data').upsert({
-      user_id: currentUser.id,
-      data: dataToSave,
-      updated_at: new Date().toISOString()
-    });
-    console.log('数据已同步到云端');
-  } catch (error) {
-    console.error('同步失败:', error);
-    throw error;
-  }
-}
-
-async function loadFromCloud() {
-  if (!currentUser) return null;
-  try {
-    var result = await supabase.from('user_data').select('data').eq('user_id', currentUser.id).single();
-    if (result.data) {
-      return result.data.data;
-    }
-    return null;
-  } catch (error) {
-    console.error('加载云端数据失败:', error);
-    return null;
-  }
-}
-
-function mergeCloudData(cloudData) {
-  var keys = ['todos', 'cds', 'habits', 'pomo', 'study', 'ints', 'bills', 'goals', 'notes', 'ci', 'sched'];
-  keys.forEach(function(key) {
-    if (cloudData[key]) {
-      S[key] = cloudData[key];
-      persist(key);
-    }
-  });
-  var fn = {dashboard:rDash,todo:rTodo,countdown:rCd,habit:rHabit,study:rStudy,interview:rInt,bills:rBills,goals:rGoals,notes:rNotes,checkin:rCi};
-  if (fn[cur]) fn[cur]();
-}
-
-supabase.auth.onAuthStateChange(async function(event, session) {
+async function handleAuthChange(event, session) {
   currentUser = session ? session.user : null;
   var loginBtn = document.getElementById('loginBtn');
   var syncBtn = document.getElementById('syncBtn');
@@ -572,37 +497,119 @@ supabase.auth.onAuthStateChange(async function(event, session) {
     if (syncStatus) syncStatus.style.display = 'none';
     if (cloudStatus) cloudStatus.textContent = '未登录';
   }
-});
+}
 
-var originalPersist = persist;
+window.signInWithGitHub = async function() {
+  try {
+    updateSyncStatus('syncing', '登录中...');
+    await supabaseClient.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: window.location.href }
+    });
+  } catch (error) {
+    console.error('登录失败:', error);
+    updateSyncStatus('error', '登录失败');
+    alert('登录失败: ' + error.message);
+  }
+};
+
+window.signOutUser = async function() {
+  try {
+    await supabaseClient.auth.signOut();
+  } catch (error) {
+    console.error('退出失败:', error);
+  }
+};
+
+window.manualSync = async function() {
+  if (!currentUser) return;
+  updateSyncStatus('syncing', '同步中...');
+  await saveToCloud();
+  updateSyncStatus('online', '已同步');
+};
+
+function updateSyncStatus(status, text) {
+  var dot = document.getElementById('syncDot');
+  var txt = document.getElementById('syncText');
+  var statusEl = document.getElementById('syncStatus');
+  
+  if (statusEl) statusEl.style.display = 'flex';
+  if (dot) {
+    dot.className = 'sync-dot';
+    if (status === 'offline') dot.classList.add('offline');
+    if (status === 'error') dot.classList.add('error');
+  }
+  if (txt) txt.textContent = text;
+}
+
+async function saveToCloud() {
+  if (!currentUser || !supabaseClient) return;
+  try {
+    var dataToSave = {
+      todos: S.todos,
+      cds: S.cds,
+      habits: S.habits,
+      pomo: S.pomo,
+      study: S.study,
+      ints: S.ints,
+      bills: S.bills,
+      goals: S.goals,
+      notes: S.notes,
+      ci: S.ci,
+      sched: S.sched,
+      theme: ld(K.theme),
+      updatedAt: new Date().toISOString()
+    };
+    await supabaseClient.from('user_data').upsert({
+      user_id: currentUser.id,
+      data: dataToSave,
+      updated_at: new Date().toISOString()
+    });
+    console.log('数据已同步到云端');
+  } catch (error) {
+    console.error('同步失败:', error);
+    throw error;
+  }
+}
+
+async function loadFromCloud() {
+  if (!currentUser || !supabaseClient) return null;
+  try {
+    var result = await supabaseClient.from('user_data').select('data').eq('user_id', currentUser.id).single();
+    if (result.data) {
+      return result.data.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('加载云端数据失败:', error);
+    return null;
+  }
+}
+
+function mergeCloudData(cloudData) {
+  var keys = ['todos', 'cds', 'habits', 'pomo', 'study', 'ints', 'bills', 'goals', 'notes', 'ci', 'sched'];
+  keys.forEach(function(key) {
+    if (cloudData[key]) {
+      S[key] = cloudData[key];
+      persist(key);
+    }
+  });
+  var fn = {dashboard:rDash,todo:rTodo,countdown:rCd,habit:rHabit,study:rStudy,interview:rInt,bills:rBills,goals:rGoals,notes:rNotes,checkin:rCi};
+  if (fn[cur]) fn[cur]();
+}
+
+var _originalPersist = persist;
 persist = function(k) {
-  originalPersist(k);
-  if (currentUser) {
+  _originalPersist(k);
+  if (currentUser && supabaseClient) {
     saveToCloud().catch(function(e) {
       console.error('自动同步失败:', e);
       updateSyncStatus('error', '同步失败');
     });
   }
 };
-</script>
-<script>
-var K = {todos:'h_td',cds:'h_cd',habits:'h_hb',pomo:'h_pm',study:'h_st',ints:'h_in',bills:'h_bl',goals:'h_gl',notes:'h_nt',ci:'h_ci',sched:'h_sc',theme:'h_th'};
-function ld(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
-function sv(k,v){localStorage.setItem(k,JSON.stringify(v));}
-var S = {
-  todos: ld(K.todos)||[],
-  cds:   ld(K.cds)||[],
-  habits:ld(K.habits)||[],
-  pomo:  ld(K.pomo)||{sessions:[]},
-  study: ld(K.study)||[],
-  ints:  ld(K.ints)||[],
-  bills: ld(K.bills)||[],
-  goals: ld(K.goals)||[],
-  notes: ld(K.notes)||[],
-  ci:    ld(K.ci)||{dates:{},streak:0},
-  sched: ld(K.sched)||{}
-};
-function persist(k){sv(K[k],S[k]);}
+
+initSupabase();
 
 var pNames = {dashboard:'仪表盘',todo:'待办事项',countdown:'倒计时',habit:'习惯打卡',pomodoro:'番茄钟',study:'学习进度',interview:'面试追踪',bills:'账单记录',goals:'目标追踪',notes:'笔记',checkin:'签到',settings:'设置'};
 var pActs = {todo:{l:'新增待办',m:'addTodo'},countdown:{l:'添加倒计时',m:'addCountdown'},habit:{l:'新建习惯',m:'addHabit'},study:{l:'添加学习',m:'addStudy'},interview:{l:'添加记录',m:'addInterview'},bills:{l:'记一笔',m:'addBill'},goals:{l:'创建目标',m:'addGoal'},notes:{l:'新建笔记',m:'addNote'}};
