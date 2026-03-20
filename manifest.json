@@ -1,0 +1,42 @@
+{
+  "name": "个人效率中心",
+  "short_name": "效率中心",
+  "description": "一个简洁高效的个人效率管理工具",
+  "start_url": "/personal-hub.html",
+  "display": "standalone",
+  "background_color": "#f6f3ee",
+  "theme_color": "#18160f",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "添加待办",
+      "short_name": "待办",
+      "url": "/personal-hub.html#todo",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "番茄钟",
+      "short_name": "专注",
+      "url": "/personal-hub.html#pomodoro",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
