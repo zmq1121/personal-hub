@@ -561,7 +561,7 @@ window.signInWithGitHub = async function() {
     updateSyncStatus('syncing', '登录中...');
     await supabaseClient.auth.signInWithOAuth({
       provider: 'github',
-      options: { redirectTo: window.location.href }
+      options: { redirectTo: 'https://personal-hub-blush-nine.vercel.app/' }
     });
   } catch (error) {
     console.error('登录失败:', error);
