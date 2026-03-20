@@ -1084,21 +1084,44 @@ function rDash() {
 
   rWeekCal();
 
-  var tt = S.todos.filter(function(x){return !x.done&&(x.due===t||!x.due);}).slice(0,5);
-  document.getElementById('dashTodos').innerHTML = tt.length ?
-    '<div class="card">'+tt.map(function(x){
-      return '<div class="li">'+
+  var todayTodos = S.todos.filter(function(x){return !x.done&&(x.due===t||!x.due);});
+  var todayScheds = S.sched[t] || [];
+  
+  var todoHtml = '';
+  if(todayTodos.length) {
+    todoHtml += '<div style="font-size:11px;color:var(--ink3);margin-bottom:8px;font-weight:500">待办事项</div>';
+    todayTodos.slice(0,3).forEach(function(x){
+      todoHtml += '<div class="li">'+
         '<div class="tck'+(x.done?' dn':'')+'" onclick="tgTodo(\''+x.id+'\')"></div>'+
         '<div style="flex:1;min-width:0">'+
           '<div class="ttxt'+(x.done?' dn':'')+'">'+esc(x.title)+'</div>'+
           '<div style="display:flex;gap:5px;margin-top:3px">'+
             '<span class="tag '+priC(x.priority)+'">'+catL(x.category)+'</span>'+
-            (x.due?'<span style="font-size:10px;color:var(--ink3);font-family:var(--f-m)">'+fmt(x.due)+'</span>':'')+
           '</div>'+
         '</div>'+
       '</div>';
-    }).join('')+'</div>'
-    : '<div class="empty"><div class="empty-mark">○</div><p>今日无待办</p></div>';
+    });
+  }
+  
+  if(todayScheds.length) {
+    todoHtml += '<div style="font-size:11px;color:var(--ink3);margin:'+(todayTodos.length?'12':'0')+'px 0 8px;font-weight:500">今日日程</div>';
+    todayScheds.forEach(function(e){
+      todoHtml += '<div class="li" onclick="editSched(\''+e.id+'\',\''+t+'\')" style="cursor:pointer">'+
+        '<span class="week-event-dot" style="background:'+schedBarColor(e.color)+';margin-right:8px"></span>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="ttxt">'+(e.time?e.time+' ':'')+esc(e.title)+'</div>'+
+        '</div>'+
+      '</div>';
+    });
+  }
+  
+  if(!todayTodos.length && !todayScheds.length) {
+    todoHtml = '<div class="empty"><div class="empty-mark">○</div><p>今日无安排</p></div>';
+  } else {
+    todoHtml = '<div class="card">'+todoHtml+'</div>';
+  }
+  
+  document.getElementById('dashTodos').innerHTML = todoHtml;
 }
 
 var tFlt = 'all';
