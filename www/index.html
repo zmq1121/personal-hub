@@ -770,26 +770,40 @@ function buildMo(t, d) {
   }
 
   if(t==='addSched') {
+    var isEdit = d && d.id;
     var dateStr = d && d.date ? d.date : td();
-    return buildModal('添加日程',
+    var timeVal = isEdit ? (d.time || '09:00') : '09:00';
+    var titleVal = isEdit ? esc(d.title) : '';
+    var colorVal = isEdit ? (d.color || 'red') : 'red';
+    var noteVal = isEdit ? (d.note || '') : '';
+    var todoId = isEdit && d.todoId ? d.todoId : '';
+    
+    var todoOptions = '<option value="">不关联待办</option>';
+    S.todos.filter(function(t){return !t.done;}).forEach(function(t){
+      todoOptions += '<option value="'+t.id+'"'+(todoId===t.id?' selected':'')+'>'+esc(t.title)+(t.due?' ('+fmt(t.due)+')':'')+'</option>';
+    });
+    
+    return buildModal(isEdit ? '编辑日程' : '添加日程',
       '<div class="frow">'+
         '<div class="fg"><label>月份</label><input type="month" id="msMonth" value="'+dateStr.slice(0,7)+'" onchange="updateSchedDays()"></div>'+
         '<div class="fg"><label>日期</label><select id="msDay"></select></div>'+
       '</div>'+
-      '<div class="fg"><label>时间</label><input type="time" id="msTime" value="09:00"></div>'+
-      '<div class="fg"><label>日程标题</label><input id="msTitle" autofocus placeholder="日程内容"></div>'+
+      '<div class="fg"><label>时间</label><input type="time" id="msTime" value="'+timeVal+'"></div>'+
+      '<div class="fg"><label>日程标题</label><input id="msTitle" autofocus placeholder="日程内容" value="'+titleVal+'"></div>'+
       '<div class="frow">'+
         '<div class="fg"><label>颜色标签</label><select id="msColor" onchange="if(this.value===\'custom\')document.getElementById(\'customColor\').style.display=\'block\';else document.getElementById(\'customColor\').style.display=\'none\';">'+
-          '<option value="red">重要</option>'+
-          '<option value="blue">学习</option>'+
-          '<option value="sage">生活</option>'+
-          '<option value="amber">工作</option>'+
-          '<option value="custom">其他（自定义）</option>'+
+          '<option value="red"'+(colorVal==='red'?' selected':'')+'>重要</option>'+
+          '<option value="blue"'+(colorVal==='blue'?' selected':'')+'>学习</option>'+
+          '<option value="sage"'+(colorVal==='sage'?' selected':'')+'>生活</option>'+
+          '<option value="amber"'+(colorVal==='amber'?' selected':'')+'>工作</option>'+
+          '<option value="custom"'+(colorVal==='custom'?' selected':'')+'>其他（自定义）</option>'+
         '</select></div>'+
       '</div>'+
       '<div id="customColor" style="display:none"><div class="custom-input"><input id="msCustomColor" placeholder="输入自定义颜色名称"><input type="color" id="msCustomColorPicker" value="#4a5568" style="width:40px;padding:2px"></div></div>'+
-      '<div class="fg"><label>备注</label><input id="msNote" placeholder="可选"></div>',
-      [['取消','closeMo()','btn-out'],['添加','saveSched()','btn-ink']]);
+      '<div class="fg"><label>关联待办</label><select id="msTodo">'+todoOptions+'</select></div>'+
+      '<div class="fg"><label>备注</label><input id="msNote" placeholder="可选" value="'+esc(noteVal)+'"></div>'+
+      (isEdit ? '<input type="hidden" id="msEditId" value="'+d.id+'"><input type="hidden" id="msEditDate" value="'+d.date+'">' : ''),
+      [['取消','closeMo()','btn-out'],['删除','delSched(\''+(isEdit?d.id:'')+'\',\''+(isEdit?d.date:'')+'\')','btn-del'],[isEdit?'保存':'添加','saveSched()','btn-ink']]);
   }
   return '';
 }
@@ -914,19 +928,25 @@ function rWeekCal() {
   
   for(var i=0;i<7;i++) {
     var d = new Date(weekStart.getTime() + i * 86400000);
-    var ds = d.toISOString().split('T')[0];
+    var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     var isToday = ds === today;
     var events = S.sched[ds] || [];
+    var dayTodos = S.todos.filter(function(t){return t.due===ds && !t.done;});
     
     html += '<div class="week-day'+(isToday?' today':'')+'" onclick="openSchedForDay(\''+ds+'\')">'+
       '<div class="week-day-num">'+d.getDate()+'</div>';
     
-    events.slice(0,3).forEach(function(e) {
+    dayTodos.slice(0,2).forEach(function(t) {
+      html += '<div class="week-event week-todo" onclick="event.stopPropagation();tgTodo(\''+t.id+'\')"><span class="week-event-dot" style="background:var(--red)"></span>'+esc(t.title)+'</div>';
+    });
+    
+    events.slice(0,3-dayTodos.length).forEach(function(e) {
       html += '<div class="week-event" onclick="event.stopPropagation();editSched(\''+e.id+'\',\''+ds+'\')"><span class="week-event-dot" style="background:'+schedBarColor(e.color)+'"></span>'+esc(e.title)+'</div>';
     });
     
-    if(events.length > 3) {
-      html += '<div class="week-event" style="color:var(--ink3)">+'+(events.length-3)+' 更多</div>';
+    var total = events.length + dayTodos.length;
+    if(total > 3) {
+      html += '<div class="week-event" style="color:var(--ink3)">+'+(total-3)+' 更多</div>';
     }
     
     html += '</div>';
@@ -977,6 +997,7 @@ function saveSched() {
   var title = gv('msTitle').trim();
   var color = gv('msColor');
   var note = gv('msNote');
+  var todoId = gv('msTodo') || '';
   var editId = document.getElementById('msEditId') ? document.getElementById('msEditId').value : '';
   var editDate = document.getElementById('msEditDate') ? document.getElementById('msEditDate').value : '';
   
@@ -996,18 +1017,24 @@ function saveSched() {
   
   if(!S.sched[day]) S.sched[day] = [];
   
+  var schedItem = {
+    id: editId || uid(),
+    time: time,
+    title: title,
+    color: color,
+    note: note,
+    todoId: todoId
+  };
+  
   if(editId) {
     var existing = S.sched[day].find(function(e) { return e.id === editId; });
     if(existing) {
-      existing.time = time;
-      existing.title = title;
-      existing.color = color;
-      existing.note = note;
+      Object.assign(existing, schedItem);
     } else {
-      S.sched[day].push({ id: editId, time: time, title: title, color: color, note: note });
+      S.sched[day].push(schedItem);
     }
   } else {
-    S.sched[day].push({ id: uid(), time: time, title: title, color: color, note: note });
+    S.sched[day].push(schedItem);
   }
   
   S.sched[day].sort(function(a,b){return (a.time||'').localeCompare(b.time||'');});
