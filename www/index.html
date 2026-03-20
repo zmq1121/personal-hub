@@ -35,11 +35,25 @@ html,body{height:100%;font-family:var(--f-b);background:var(--paper);color:var(-
 .nav-item:hover{color:rgba(255,255,255,.78);}
 .nav-item.active{color:#f6f3ee;border-left-color:var(--red);background:rgba(255,255,255,.04);font-weight:500;}
 
+.user-section{padding:16px 22px;border-top:1px solid rgba(255,255,255,.08);margin-top:auto;}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:600;}
+.user-name{font-size:12px;color:rgba(255,255,255,.7);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.login-btn{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:none;border-radius:var(--r);padding:8px 14px;font-size:11px;cursor:pointer;font-family:var(--f-b);width:100%;transition:all .2s;}
+.login-btn:hover{background:rgba(255,255,255,.2);}
+.logout-btn{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);border-radius:var(--r);padding:6px 12px;font-size:10px;cursor:pointer;font-family:var(--f-b);transition:all .2s;}
+.logout-btn:hover{color:var(--red);border-color:var(--red);}
+.sync-status{font-size:10px;color:rgba(255,255,255,.4);margin-top:8px;display:flex;align-items:center;gap:6px;}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--sage);}
+.sync-dot.offline{background:var(--amber);}
+.sync-dot.error{background:var(--red);}
+
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
 .topbar{height:52px;flex-shrink:0;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 24px;gap:12px;}
 .topbar-title{font-size:13px;font-weight:500;flex:1;color:var(--ink2);letter-spacing:.01em;}
 .tp-btn{background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);padding:7px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--f-b);transition:opacity .15s;}
 .tp-btn:hover{opacity:.8;}
+.sync-btn{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue);padding:6px 12px;font-size:11px;}
 
 .pages{flex:1;overflow:hidden;position:relative;}
 .page{display:none;height:100%;overflow-y:auto;padding:24px 24px;}
@@ -137,7 +151,6 @@ textarea{resize:vertical;min-height:72px;}
 
 .dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 
-/* WEEK CALENDAR */
 .week-cal{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:16px;}
 .week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line);}
 .week-title{font-size:12px;font-weight:600;color:var(--ink);}
@@ -155,7 +168,6 @@ textarea{resize:vertical;min-height:72px;}
 .week-event{font-size:10px;color:var(--ink2);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .week-event-dot{width:4px;height:4px;border-radius:50%;display:inline-block;margin-right:3px;}
 
-/* CONFIRM DIALOG */
 .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(24,22,15,.7);z-index:200;align-items:center;justify-content:center;}
 .confirm-overlay.open{display:flex;}
 .confirm-box{background:var(--paper);border-radius:var(--r-lg);padding:24px;max-width:320px;text-align:center;}
@@ -163,29 +175,22 @@ textarea{resize:vertical;min-height:72px;}
 .confirm-msg{font-size:13px;color:var(--ink3);margin-bottom:20px;}
 .confirm-btns{display:flex;gap:10px;justify-content:center;}
 
-/* CUSTOM INPUT */
 .custom-input{display:flex;align-items:center;gap:6px;margin-top:8px;}
 .custom-input input{flex:1;padding:6px 8px;font-size:12px;}
 .custom-input .btn{padding:6px 10px;font-size:11px;}
 
-/* IMPORT OPTIONS */
 .import-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
 .import-btn{background:var(--paper2);border:1px solid var(--line);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:all .15s;}
 .import-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
 .import-btn-icon{font-size:20px;margin-bottom:4px;}
 .import-btn-label{font-size:11px;font-weight:500;}
 
-/* TOGGLE */
 .tgl{position:relative;display:inline-block;width:44px;height:24px;}
 .tgl input{opacity:0;width:0;height:0;}
 .tgl-s{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--line2);border-radius:12px;transition:.2s;}
 .tgl-s::before{position:absolute;content:'';height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;}
 .tgl input:checked+.tgl-s{background:var(--sage);}
 .tgl input:checked+.tgl-s::before{transform:translateX(20px);}
-
-/* SYNC STATUS */
-.sync-status{font-size:10px;color:rgba(255,255,255,.4);margin-top:8px;display:flex;align-items:center;gap:6px;}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--sage);}
 
 @media(max-width:768px){
   .sidebar{display:none;}
@@ -268,21 +273,24 @@ body.dark .qbtn{background:var(--paper2);}
       <div class="nav-item" data-p="settings">设置</div>
     </div>
     
-    <div class="sync-status" style="display:flex;margin-top:auto;padding:16px 22px;border-top:1px solid rgba(255,255,255,.08);">
-      <span class="sync-dot"></span>
-      <span>本地存储模式</span>
+    <div class="user-section" id="userSection">
+      <button class="login-btn" id="loginBtn" onclick="signInWithGitHub()">登录同步数据</button>
+      <div class="sync-status" id="syncStatus" style="display:none">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncText">已同步</span>
+      </div>
     </div>
   </nav>
 
   <div class="main">
     <div class="topbar">
       <div class="topbar-title" id="tpTitle">仪表盘</div>
+      <button class="tp-btn sync-btn" id="syncBtn" style="display:none" onclick="manualSync()">同步</button>
       <button class="tp-btn" id="tpAct" style="display:none"></button>
     </div>
 
     <div class="pages">
 
-      <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
         <div class="g4" style="margin-bottom:20px" id="dashStats"></div>
         <div class="sec-hd">快速操作</div>
@@ -304,7 +312,6 @@ body.dark .qbtn{background:var(--paper2);}
         </div>
       </div>
 
-      <!-- TODO -->
       <div class="page" id="page-todo">
         <div class="ft" id="todoFt">
           <button class="ftab active" data-f="all">全部</button>
@@ -316,13 +323,10 @@ body.dark .qbtn{background:var(--paper2);}
         <div id="todoList"></div>
       </div>
 
-      <!-- COUNTDOWN -->
       <div class="page" id="page-countdown"><div id="cdList"></div></div>
 
-      <!-- HABIT -->
       <div class="page" id="page-habit"><div id="habitList"></div></div>
 
-      <!-- POMODORO -->
       <div class="page" id="page-pomodoro">
         <div class="g2" style="margin-bottom:18px" id="pomStats"></div>
         <div style="text-align:center;padding:40px 0">
@@ -336,10 +340,8 @@ body.dark .qbtn{background:var(--paper2);}
         </div>
       </div>
 
-      <!-- STUDY -->
       <div class="page" id="page-study"><div id="studyList"></div></div>
 
-      <!-- INTERVIEW -->
       <div class="page" id="page-interview">
         <div class="ft" id="intFt">
           <button class="ftab active" data-f="all">全部</button>
@@ -355,7 +357,6 @@ body.dark .qbtn{background:var(--paper2);}
         <div id="intList"></div>
       </div>
 
-      <!-- BILLS -->
       <div class="page" id="page-bills">
         <div class="g4" style="margin-bottom:20px" id="billStats"></div>
         <div class="sec-hd">支出分布</div>
@@ -364,10 +365,8 @@ body.dark .qbtn{background:var(--paper2);}
         <div id="billList"></div>
       </div>
 
-      <!-- GOALS -->
       <div class="page" id="page-goals"><div id="goalList"></div></div>
 
-      <!-- NOTES -->
       <div class="page" id="page-notes">
         <div class="ft" id="noteFt">
           <button class="ftab active" data-f="all">全部</button>
@@ -379,7 +378,6 @@ body.dark .qbtn{background:var(--paper2);}
         <div id="noteList"></div>
       </div>
 
-      <!-- CHECKIN -->
       <div class="page" id="page-checkin">
         <div class="g2" style="margin-bottom:18px" id="ciStats"></div>
         <div class="sec-hd">本月签到</div>
@@ -387,7 +385,6 @@ body.dark .qbtn{background:var(--paper2);}
         <div class="card" id="ciAction"></div>
       </div>
 
-      <!-- SETTINGS -->
       <div class="page" id="page-settings">
         <div class="card">
           <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line)">
@@ -395,8 +392,8 @@ body.dark .qbtn{background:var(--paper2);}
             <label class="tgl"><input type="checkbox" id="thTgl" onchange="toggleTheme()"><span class="tgl-s"></span></label>
           </div>
           <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line)">
-            <div><div style="font-size:13px;font-weight:500">数据存储</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">数据保存在浏览器本地</div></div>
-            <span style="font-size:12px;color:var(--sage)">本地模式</span>
+            <div><div style="font-size:13px;font-weight:500">云端同步</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">登录后自动同步数据到云端</div></div>
+            <span id="cloudStatus" style="font-size:12px;color:var(--ink3)">未登录</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line)">
             <div><div style="font-size:13px;font-weight:500">导出数据</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">备份为 JSON 文件</div></div>
@@ -412,9 +409,7 @@ body.dark .qbtn{background:var(--paper2);}
           </div>
         </div>
         <input type="file" id="impFile" accept=".json" style="display:none" onchange="importData(event)">
-        <div style="margin-top:28px;text-align:center;color:var(--ink3);font-size:11px;letter-spacing:.04em">
-          💡 提示：使用导出/导入功能可在不同设备间迁移数据
-        </div>
+        <div style="margin-top:28px;text-align:center;color:var(--ink3);font-size:11px;letter-spacing:.04em">数据存储于本地浏览器 & Supabase云端</div>
       </div>
 
     </div>
@@ -438,6 +433,158 @@ body.dark .qbtn{background:var(--paper2);}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var supabaseUrl = 'https://nowcffymimjpgldgyabr.supabase.co';
+var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vd2NmZnltaW1qcGdsZGd5YWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMDk0MjIsImV4cCI6MjA4OTU4NTQyMn0.qhSqZJlUNuhdMTQS1ruo8E76A2qHaH4E2RiqyLyrkQg';
+var supabase = supabase.createClient(supabaseUrl, supabaseKey);
+var currentUser = null;
+
+window.signInWithGitHub = async function() {
+  try {
+    updateSyncStatus('syncing', '登录中...');
+    var result = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: window.location.href }
+    });
+  } catch (error) {
+    console.error('登录失败:', error);
+    updateSyncStatus('error', '登录失败');
+    alert('登录失败: ' + error.message);
+  }
+};
+
+window.signOutUser = async function() {
+  try {
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('退出失败:', error);
+  }
+};
+
+window.manualSync = async function() {
+  if (!currentUser) return;
+  updateSyncStatus('syncing', '同步中...');
+  await saveToCloud();
+  updateSyncStatus('online', '已同步');
+};
+
+function updateSyncStatus(status, text) {
+  var dot = document.getElementById('syncDot');
+  var txt = document.getElementById('syncText');
+  var statusEl = document.getElementById('syncStatus');
+  
+  if (statusEl) statusEl.style.display = 'flex';
+  if (dot) {
+    dot.className = 'sync-dot';
+    if (status === 'offline') dot.classList.add('offline');
+    if (status === 'error') dot.classList.add('error');
+  }
+  if (txt) txt.textContent = text;
+}
+
+async function saveToCloud() {
+  if (!currentUser) return;
+  try {
+    var dataToSave = {
+      todos: S.todos,
+      cds: S.cds,
+      habits: S.habits,
+      pomo: S.pomo,
+      study: S.study,
+      ints: S.ints,
+      bills: S.bills,
+      goals: S.goals,
+      notes: S.notes,
+      ci: S.ci,
+      sched: S.sched,
+      theme: ld(K.theme),
+      updatedAt: new Date().toISOString()
+    };
+    var result = await supabase.from('user_data').upsert({
+      user_id: currentUser.id,
+      data: dataToSave,
+      updated_at: new Date().toISOString()
+    });
+    console.log('数据已同步到云端');
+  } catch (error) {
+    console.error('同步失败:', error);
+    throw error;
+  }
+}
+
+async function loadFromCloud() {
+  if (!currentUser) return null;
+  try {
+    var result = await supabase.from('user_data').select('data').eq('user_id', currentUser.id).single();
+    if (result.data) {
+      return result.data.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('加载云端数据失败:', error);
+    return null;
+  }
+}
+
+function mergeCloudData(cloudData) {
+  var keys = ['todos', 'cds', 'habits', 'pomo', 'study', 'ints', 'bills', 'goals', 'notes', 'ci', 'sched'];
+  keys.forEach(function(key) {
+    if (cloudData[key]) {
+      S[key] = cloudData[key];
+      persist(key);
+    }
+  });
+  var fn = {dashboard:rDash,todo:rTodo,countdown:rCd,habit:rHabit,study:rStudy,interview:rInt,bills:rBills,goals:rGoals,notes:rNotes,checkin:rCi};
+  if (fn[cur]) fn[cur]();
+}
+
+supabase.auth.onAuthStateChange(async function(event, session) {
+  currentUser = session ? session.user : null;
+  var loginBtn = document.getElementById('loginBtn');
+  var syncBtn = document.getElementById('syncBtn');
+  var syncStatus = document.getElementById('syncStatus');
+  var cloudStatus = document.getElementById('cloudStatus');
+  
+  if (currentUser) {
+    if (loginBtn) {
+      loginBtn.innerHTML = '<div class="user-info"><div class="user-avatar">' + (currentUser.user_metadata && currentUser.user_metadata.user_name ? currentUser.user_metadata.user_name.charAt(0).toUpperCase() : 'U') + '</div><div class="user-name">' + (currentUser.user_metadata && currentUser.user_metadata.user_name || '用户') + '</div></div><button class="logout-btn" onclick="event.stopPropagation();signOutUser()">退出</button>';
+      loginBtn.style.padding = '12px';
+      loginBtn.onclick = null;
+    }
+    if (syncBtn) syncBtn.style.display = '';
+    if (syncStatus) syncStatus.style.display = 'flex';
+    if (cloudStatus) cloudStatus.textContent = '已连接';
+    
+    updateSyncStatus('syncing', '同步中...');
+    var cloudData = await loadFromCloud();
+    if (cloudData) {
+      mergeCloudData(cloudData);
+    }
+    updateSyncStatus('online', '已同步');
+  } else {
+    if (loginBtn) {
+      loginBtn.innerHTML = '登录同步数据';
+      loginBtn.style.padding = '8px 14px';
+      loginBtn.onclick = signInWithGitHub;
+    }
+    if (syncBtn) syncBtn.style.display = 'none';
+    if (syncStatus) syncStatus.style.display = 'none';
+    if (cloudStatus) cloudStatus.textContent = '未登录';
+  }
+});
+
+var originalPersist = persist;
+persist = function(k) {
+  originalPersist(k);
+  if (currentUser) {
+    saveToCloud().catch(function(e) {
+      console.error('自动同步失败:', e);
+      updateSyncStatus('error', '同步失败');
+    });
+  }
+};
+</script>
 <script>
 var K = {todos:'h_td',cds:'h_cd',habits:'h_hb',pomo:'h_pm',study:'h_st',ints:'h_in',bills:'h_bl',goals:'h_gl',notes:'h_nt',ci:'h_ci',sched:'h_sc',theme:'h_th'};
 function ld(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
@@ -599,7 +746,6 @@ function buildModal(title, body, actions) {
   return '<div class="modal-t">'+title+'</div>'+body+'<div class="modal-ac">'+btns+'</div>';
 }
 
-/* ══ IMPORT ══ */
 window.importFrom = function(type) {
   var content = document.getElementById('mcn');
   var title = document.getElementById('mtt');
@@ -663,7 +809,6 @@ document.getElementById('confirmOv').addEventListener('click', function(e) {
   if(e.target === e.currentTarget) closeConfirm();
 });
 
-/* ══ UTILS ══ */
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function td(){return new Date().toISOString().split('T')[0];}
 function fmt(d){if(!d)return''; var x=new Date(d); return (x.getMonth()+1)+'/'+(x.getDate());}
@@ -743,7 +888,6 @@ function openSchedForDay(ds) {
   showMo('addSched', {date: ds});
 }
 
-/* ══ SCHEDULE ══ */
 function updateSchedDays() {
   var month = document.getElementById('msMonth').value;
   var daySelect = document.getElementById('msDay');
@@ -800,7 +944,6 @@ function saveSched() {
   showToast('日程已添加');
 }
 
-/* ══ TOAST ══ */
 function showToast(msg) {
   var toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:var(--r);font-size:13px;z-index:1000;';
@@ -844,7 +987,6 @@ function rDash() {
     : '<div class="empty"><div class="empty-mark">○</div><p>今日无待办</p></div>';
 }
 
-/* ══ TODO ══ */
 var tFlt = 'all';
 function saveTodo(){
   var title = gv('mt').trim(); if(!title)return;
@@ -898,7 +1040,6 @@ document.getElementById('todoFt').addEventListener('click',function(e){
   rTodo();
 });
 
-/* ══ COUNTDOWN ══ */
 function saveCd(){
   var n=gv('mn').trim(), d=gv('md'); if(!n||!d)return;
   S.cds.push({id:uid(),name:n,date:d});
@@ -1053,7 +1194,6 @@ function rStudy(){
   }).join('');
 }
 
-/* ══ INTERVIEW ══ */
 var iFlt='all';
 function saveInt(){
   var co=gv('mco').trim(); if(!co)return;
@@ -1145,7 +1285,6 @@ function rBills(){
     :'<div class="empty"><div class="empty-mark">○</div><p>还没有记录</p></div>';
 }
 
-/* ══ GOALS ══ */
 function saveGoal(){
   var n=gv('mn').trim(); if(!n)return;
   S.goals.push({id:uid(),name:n,cur:0,target:parseInt(gv('mtg'))||100,due:gv('md')});
@@ -1268,7 +1407,6 @@ function rCi(){
     :'<div style="padding:4px"><div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px">今日心情</div><div style="display:flex;gap:8px;justify-content:center;margin:14px 0">'+moods.map(function(m){return '<div style="width:42px;height:42px;border-radius:50%;border:2px solid '+(m===selMood?'var(--ink)':'var(--line2)')+';cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .15s;background:'+(m===selMood?'var(--paper)':'var(--paper2)')+'" onclick="selM(\''+m+'\')">'+m+'</div>';}).join('')+'</div><input id="ciNote" placeholder="写点什么…" style="margin-top:8px"><button class="btn btn-ink" style="width:100%;margin-top:10px;justify-content:center" onclick="doCheckin()">签到打卡</button></div>';
 }
 
-/* ══ SETTINGS ══ */
 function toggleTheme(){var on=document.getElementById('thTgl').checked; document.body.classList.toggle('dark',on); sv(K.theme,on?'dark':'light');}
 function exportData(){
   var data = {
