@@ -359,6 +359,7 @@ body.dark .qbtn{background:var(--paper2);}
           <button class="ftab" data-f="oc">OC</button>
           <button class="ftab" data-f="ocrejected">OC已拒绝</button>
           <button class="ftab" data-f="rejected">已拒绝</button>
+          <button class="btn btn-ink btn-sm" onclick="showMo('batchImport')" style="margin-left:auto">批量导入</button>
         </div>
         <div id="intList"></div>
       </div>
@@ -717,7 +718,12 @@ function buildMo(t, d) {
     '<div class="frow"><div class="fg"><label>薪资 (K)</label><input id="msl" type="number" placeholder="可选"></div><div class="fg"><label>来源</label><input id="msr" placeholder="Boss / 内推"></div></div>'+
     '<div class="fg"><label>状态</label><select id="mst"><option value="pending">待投递</option><option value="applied">已投递</option><option value="screening">简历筛选</option><option value="interview">面试中</option><option value="offer">已获 Offer</option><option value="oc">OC</option><option value="ocrejected">OC已拒绝</option><option value="rejected">已拒绝</option></select></div>'+
     '<div class="fg"><label>备注</label><textarea id="mnt" rows="2" placeholder="面试心得"></textarea></div>',
-    [['取消','closeMo()','btn-out'],['保存','saveInt()','btn-ink']]);
+    [['取消','closeMo()','btn-out'],['批量导入','showMo(\'batchImport\')','btn-out'],['保存','saveInt()','btn-ink']]);
+
+  if(t==='batchImport') return buildModal('批量导入面试记录',
+    '<div class="fg"><label>粘贴面经内容</label><textarea id="batchContent" rows="12" placeholder="格式示例：&#10;公司名称--岗位名称（状态）薪资&#10;岗位JD内容...&#10;面试时长&#10;面试问题...&#10;&#10;多条记录用空行分隔"></textarea></div>'+
+    '<div style="font-size:11px;color:var(--ink3);margin-top:8px">支持自动识别：公司、岗位、状态、薪资、面试时长、面试问题</div>',
+    [['取消','closeMo()','btn-out'],['解析并导入','parseAndImport()','btn-ink']]);
 
   if(t==='editInt') return buildModal('更新状态',
     '<div class="fg"><label>状态</label><select id="mst">'+
@@ -1012,11 +1018,9 @@ function saveSched() {
     color = gv('msCustomColor') || 'custom';
   }
   
-  if(editId) {
-    if(editDate !== day && S.sched[editDate]) {
-      S.sched[editDate] = S.sched[editDate].filter(function(e) { return e.id !== editId; });
-      if(S.sched[editDate].length === 0) delete S.sched[editDate];
-    }
+  if(editId && editDate !== day && S.sched[editDate]) {
+    S.sched[editDate] = S.sched[editDate].filter(function(e) { return e.id !== editId; });
+    if(S.sched[editDate].length === 0) delete S.sched[editDate];
   }
   
   if(!S.sched[day]) S.sched[day] = [];
@@ -1339,6 +1343,99 @@ function saveInt(){
   S.ints.unshift({id:uid(),company:co,role:gv('mrl'),salary:gv('msl'),source:gv('msr'),status:gv('mst'),note:gv('mnt'),createdAt:td()});
   persist('ints'); closeMo(); rInt();
 }
+
+function parseAndImport(){
+  var content = gv('batchContent').trim();
+  if(!content) { alert('请粘贴面经内容'); return; }
+  
+  var records = content.split(/\n\n+/);
+  var imported = 0;
+  
+  records.forEach(function(record) {
+    if(!record.trim()) return;
+    
+    var lines = record.split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l; });
+    if(!lines.length) return;
+    
+    var firstLine = lines[0];
+    var company = '', role = '', status = 'applied', salary = '', duration = '', questions = [], note = '';
+    
+    var headerMatch = firstLine.match(/^(.+?)\s*--\s*(.+?)(?:\s*[\(（](.+?)[\)）])?(?:\s*(\d+)[\/\s]*(?:d|天|元)?)?$/i);
+    if(headerMatch) {
+      company = headerMatch[1].trim();
+      role = headerMatch[2].trim();
+      if(headerMatch[3]) {
+        var statusText = headerMatch[3].toLowerCase();
+        if(statusText.includes('oc') && statusText.includes('拒绝')) status = 'ocrejected';
+        else if(statusText.includes('oc')) status = 'oc';
+        else if(statusText.includes('offer')) status = 'offer';
+        else if(statusText.includes('一面') || statusText.includes('二面') || statusText.includes('面试')) status = 'interview';
+        else if(statusText.includes('挂')) status = 'rejected';
+        else if(statusText.includes('筛选')) status = 'screening';
+        else if(statusText.includes('投递')) status = 'applied';
+      }
+      if(headerMatch[4]) salary = headerMatch[4];
+    } else {
+      company = firstLine.split(/[\s\-—–]+/)[0];
+    }
+    
+    var contentLines = [];
+    var inQuestions = false;
+    
+    for(var i = 1; i < lines.length; i++) {
+      var line = lines[i];
+      
+      if(/^(\d+)\s*min/i.test(line) || /^(\d+)分钟/i.test(line)) {
+        duration = line;
+        inQuestions = true;
+        continue;
+      }
+      
+      if(/^\d+[\.\、\)]\s*/.test(line) && inQuestions) {
+        questions.push(line.replace(/^\d+[\.\、\)]\s*/, ''));
+        continue;
+      }
+      
+      if(!inQuestions) {
+        contentLines.push(line);
+      }
+    }
+    
+    note = '';
+    if(duration) note += '面试时长: ' + duration + '\n';
+    if(questions.length) {
+      note += '面试问题:\n' + questions.map(function(q, idx){ return (idx+1) + '. ' + q; }).join('\n');
+    }
+    if(contentLines.length && !questions.length) {
+      note = contentLines.slice(0, 5).join('\n');
+    }
+    
+    if(company) {
+      S.ints.unshift({
+        id: uid(),
+        company: company,
+        role: role,
+        salary: salary,
+        source: '',
+        status: status,
+        note: note,
+        questions: questions,
+        createdAt: td()
+      });
+      imported++;
+    }
+  });
+  
+  if(imported > 0) {
+    persist('ints');
+    closeMo();
+    rInt();
+    showToast('成功导入 ' + imported + ' 条面试记录');
+  } else {
+    alert('未能识别任何面试记录，请检查格式');
+  }
+}
+
 function updInt(id){
   var x=S.ints.find(function(i){return i.id===id;}); if(!x)return;
   x.status=gv('mst'); x.note=gv('mnt'); persist('ints'); closeMo(); rInt();
